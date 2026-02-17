@@ -1,0 +1,1 @@
+A B2C Quick Commerce app (Blinkit-like) built on a Microservices architecture. Features 4 isolated backend services (FastAPI + MongoDB), a premium Flutter mobile app (Provider), and full Docker/Kubernetes orchestration. Includes auth, product search, cart management, and real-time delivery tracking simulation.
