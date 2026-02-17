@@ -1,0 +1,21 @@
+{
+	"name": "Blinkit Clone Dev",
+	"dockerComposeFile": [
+		"../docker-compose.yml",
+		"docker-compose.yml"
+	],
+	"service": "devcontainer",
+	"workspaceFolder": "/workspaces/blinkit-clone/blinkit_commerce",
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-azuretools.vscode-docker",
+				"mongodb.mongodb-vscode"
+			]
+		}
+	}
+}
