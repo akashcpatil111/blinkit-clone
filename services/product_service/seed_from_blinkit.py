@@ -114,96 +114,72 @@ def scrape_blinkit():
             print(f"Location handling skipped or failed: {e}")
             with open("debug_fail.html", "w", encoding="utf-8") as f: f.write(driver.page_source)
 
-        # 2. Categories
-        # Direct URLs are safest.
-        category_urls = [
-            ("Dairy & Eggs", "https://blinkit.com/cn/dairy-breakfast/cid/14"),
-            ("Fruits & Vegetables", "https://blinkit.com/cn/vegetables-fruits/cid/1487"),
-            ("Snacks", "https://blinkit.com/cn/munchies/cid/1253"), 
-            ("Beverages", "https://blinkit.com/cn/cold-drinks-juices/cid/339"),
-            ("Instant Food", "https://blinkit.com/cn/instant-packaged-food/cid/24")
+        # 2. Categories (Using Search Strategy)
+        categories = [
+            ("Dairy", "Milk"),
+            ("Vegetables", "Vegetables"),
+            ("Snacks", "Chips"),
+            ("Beverages", "Cold Drinks"),
+            ("Instant Food", "Noodles")
         ]
 
         wait = WebDriverWait(driver, 15)
 
-        for cat_name, url in category_urls:
-            print(f"Scraping Category: {cat_name} - {url}")
-            driver.get(url)
+        for cat_name, search_term in categories:
+            search_url = f"https://blinkit.com/s/?q={search_term}"
+            print(f"Scraping Category: {cat_name} - {search_url}")
+            driver.get(search_url)
             
             try:
-                # Wait for product grid container
-                # Trying more generic/robust locators
-                wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'Product__ProductContainer')] | //a[contains(@href, '/prn/')]")))
+                # Wait for product cards using Tailwind classes
+                wait.until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//div[contains(@class, 'tw-line-clamp-2')]]")))
                 
-                # Scroll to load
+                # Scroll to load more
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
                 asyncio.run(asyncio.sleep(1))
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 asyncio.run(asyncio.sleep(2))
 
-                # Find product cards - often they are anchors or divs wrapping the content
-                # Blinkit product cards usually link to a product page
                 # Find product cards
-                product_cards = driver.find_elements(By.XPATH, "//div[contains(@class, 'Product__UpdatedPlpProductContainer')]")
+                product_cards = driver.find_elements(By.XPATH, "//div[@role='button' and .//div[contains(@class, 'tw-line-clamp-2')]]")
+                print(f"Found {len(product_cards)} product cards for {cat_name}.")
                 
-                if not product_cards:
-                     # Fallback strategy
-                     product_cards = driver.find_elements(By.XPATH, "//div[contains(@class, 'Product__ProductContainer')]")
-                
-                print(f"Found {len(product_cards)} product cards.")
-                
-                # Snapshot FIRST CARD for debugging
-                if len(product_cards) > 0:
-                    try:
-                        with open("debug_card.html", "w", encoding="utf-8") as f:
-                            f.write(product_cards[0].get_attribute("outerHTML"))
-                        print("Dumped first card HTML to debug_card.html")
-                    except Exception as e:
-                        print(f"Could not dump card HTML: {e}")
-
-                category_count = 0
+                count = 0
                 for i, card in enumerate(product_cards):
-                    if category_count >= 15: 
+                    if count >= 15: 
                         break
                         
                     try:
-                        # print(f"DEBUG: Processing card {i}")
-                        name = ""
-                        price = 0.0
-                        image_url = ""
-                        quantity = "1 unit"
-                        
-                        # Name
+                        # Extract Name
                         try:
-                            # Try 'UpdatedTitle' class
-                            name_el = card.find_element(By.XPATH, ".//div[contains(@class, 'Product__UpdatedTitle')]")
-                            name = name_el.text.strip()
-                            # print(f"DEBUG: Name found: {name}")
-                        except Exception as e:
-                            # print(f"DEBUG: Name failed for card {i}: {e}")
+                            title_el = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-line-clamp-2')]")
+                            name = title_el.text.strip()
+                        except:
                             continue # Skip if no name
-                            
-                        # Price
+
+                        # Extract Price
+                        price = 0.0
                         try:
-                            price_el = card.find_element(By.XPATH, ".//div[contains(text(), '₹')]")
+                            price_el = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-font-semibold') and contains(text(), '₹')]")
                             price = clean_price(price_el.text)
-                        except Exception as e:
-                            # print(f"DEBUG: Price failed: {e}")
+                        except:
                             pass
                             
-                        # Image
+                        # Extract Quantity
+                        quantity = "1 unit"
+                        try: 
+                             qty_el = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-line-clamp-1') and contains(@class, 'tw-text-200')]")
+                             quantity = qty_el.text.strip()
+                        except:
+                             pass
+
+                        # Extract Image
+                        image_url = ""
                         try:
                             img_el = card.find_element(By.TAG_NAME, "img")
                             image_url = img_el.get_attribute("src")
                         except:
                             pass
-                            
-                        # Quantity
-                        try: 
-                             qty_el = card.find_element(By.XPATH, ".//span[contains(@class, 'plp-product__quantity')]")
-                             quantity = qty_el.text.strip()
-                        except:
-                             pass
 
                         description = f"{name} - {quantity}. Sourced from Blinkit."
                         
@@ -220,8 +196,11 @@ def scrape_blinkit():
                         # Dedup by name
                         if not any(p['name'] == name for p in scraped_products):
                             scraped_products.append(product)
-                            category_count += 1
-                            print(f"Extracted: {name} - ₹{price}")
+                            count += 1
+                            try:
+                                print(f"Extracted: {name} - {price}")
+                            except:
+                                print(f"Extracted product {count}")
 
                     except Exception as e:
                         print(f"Error parsing card {i}: {e}")

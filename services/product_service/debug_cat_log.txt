@@ -1,0 +1,12 @@
+Navigating to https://blinkit.com/ ...
+Attempting location detection...
+Found location input element.
+Found 16 suggestions.
+Clicking suggestion: Gurugram railways station entry gate
+Laxman Garden, Gurgaon Rural, Gurugram, Haryana, India
+Navigating to search URL: https://blinkit.com/s/?q=milk
+Title after search: Buy milk Online | blinkit
+Dumped HTML to debug_search_direct.html
+Searching for product cards using Tailwind classes...
+Found 25 products with Tailwind selector.
+Error: 'charmap' codec can't encode character '\u20b9' in position 173: character maps to <undefined>
