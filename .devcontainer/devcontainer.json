@@ -1,14 +1,9 @@
 {
 	"name": "Blinkit Clone Dev",
-	"dockerComposeFile": [
-		"docker-compose.yml"
-	],
-	"service": "devcontainer",
-	"workspaceFolder": "/workspaces/blinkit-clone/blinkit_commerce",
+	"image": "mcr.microsoft.com/devcontainers/python:0-3.10",
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
-	"postCreateCommand": "pip install -r services/product_service/requirements.txt",
 	"customizations": {
 		"vscode": {
 			"extensions": [
