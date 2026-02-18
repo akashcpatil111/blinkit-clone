@@ -1,6 +1,13 @@
 version: '3.8'
 
 services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
   devcontainer:
     build:
       context: .
@@ -10,3 +17,6 @@ services:
     command: sleep infinity
     # Connect to the same network as the other services
     network_mode: service:mongo
+
+volumes:
+  mongo_data:

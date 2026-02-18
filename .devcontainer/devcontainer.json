@@ -1,7 +1,6 @@
 {
 	"name": "Blinkit Clone Dev",
 	"dockerComposeFile": [
-		"../docker-compose.yml",
 		"docker-compose.yml"
 	],
 	"service": "devcontainer",
