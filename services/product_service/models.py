@@ -8,6 +8,9 @@ class Product(BaseModel):
     price: float
     category: str
     image_url: str
+    description: Optional[str] = None
+    quantity: Optional[str] = None
+    availability: bool = True
 
     class Config:
         allow_population_by_field_name = True
@@ -16,6 +19,9 @@ class Product(BaseModel):
                 "name": "Milk",
                 "price": 2.5,
                 "category": "Dairy",
-                "image_url": "http://example.com/milk.jpg"
+                "image_url": "http://example.com/milk.jpg",
+                "description": "Fresh milk",
+                "quantity": "1L",
+                "availability": True
             }
         }

@@ -9,6 +9,7 @@
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
+	"postCreateCommand": "pip install -r services/product_service/requirements.txt",
 	"customizations": {
 		"vscode": {
 			"extensions": [

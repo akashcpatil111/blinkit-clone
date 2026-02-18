@@ -1,0 +1,39 @@
+Navigating to https://blinkit.com/ ...
+Title: 30,000+ products delivered to your doorstep | Blinkit
+'Detecting your location...' NOT found.
+FOUND 'Select Location' button (by text).
+Could not find/click 'Select Location': Message: element click intercepted: Element <div class="LocationBar__Subtitle-sc-x8ezho-10 bdWwbr">...</div> is not clickable at point (308, 56). Other element would receive the click: <div class="LocationDropDown__LocationOverlay-sc-bx29pc-1 bLgtGp"></div>
+  (Session info: chrome=144.0.7559.134); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0xc55093
+	0xc550d4
+	0xa4b490
+	0xa9bfd8
+	0xa9a1e9
+	0xa97ba2
+	0xa96db4
+	0xa8b4f8
+	0xab81bc
+	0xa8af34
+	0xab8384
+	0xad5341
+	0xab7f56
+	0xa896c9
+	0xa8a484
+	0xea7e34
+	0xea30c9
+	0xec0add
+	0xc6db38
+	0xc758ad
+	0xc5d848
+	0xc5da12
+	0xc475fa
+	0x76295d49
+	0x7795d83b
+	0x7795d7c1
+
+Searching for inputs...
+Found 1 input elements.
+Input 0: placeholder='search delivery location', class='LocationSearchBox__InputSelect-sc-1k8u6a6-0 fZCGlI', visible=True
+Dumped HTML to debug_loc_v2.html

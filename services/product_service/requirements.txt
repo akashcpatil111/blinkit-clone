@@ -2,3 +2,5 @@ fastapi
 uvicorn
 pydantic<2.0
 motor
+selenium
+webdriver-manager
