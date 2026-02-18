@@ -1,64 +1,98 @@
 # Blinkit Clone - Microservices & Flutter Architecture
 
-> **Project Description**: A B2C Quick Commerce app (Blinkit-like) built on a Microservices architecture. Features 4 isolated backend services (FastAPI + MongoDB), a premium Flutter mobile app (Provider), and full Docker/Kubernetes orchestration. Includes auth, product search, cart management, and real-time delivery tracking simulation.
+**Intern Assignment Submission**
 
-> **Transparency Statement**: 
-> - **Scaffolding and Isolation**: Managed via Google Antigravity.
-> - **UI Design**: Derived from Google Stitch requirements.
-> - **AI Assistance**: "Gemini" was used for architectural logic optimization and generating K8s configuration. 
-> - **Manual Implementation**: Core logic in services, state management in Flutter, and Dockerfile optimization were verified manually.
-> - **Architecture Decision**: The Cart logic is implemented via Client-Side State (Provider) for minimal latency ("Optimistic UI"), with the final transaction being sent to the Order Service. This reduces inter-service chatter for a smoother user experience in this demonstration scope.
+## 📋 Project Overview
+A minimal B2C quick-commerce application built with a **Microservices Architecture**.
+- **Backend**: Python (FastAPI) - 4 Independent Services
+- **Frontend**: Flutter (Mobile App)
+- **Database**: MongoDB (Per-service collections)
+- **Infrastructure**: Docker & Kubernetes
 
 ## 🏗️ Architecture
-(See ASCII diagram in previous steps or implementation plan)
 
-## 🚀 Tech Stack
--   **Backend**: FastAPI (Python) - 4 Isolated Microservices
--   **Frontend**: Flutter (Dart) - Provider State Management
--   **Database**: MongoDB
--   **Infrastructure**: Docker, Kubernetes (Manifests included)
+The system is split into 4 isolated microservices as required:
 
-## 🛠️ Local Setup
+1.  **User Service** (`Port 8001`)
+    - Handles Registration & Login (JWT Auth).
+    - Manages User Profile & Addresses.
+2.  **Product Service** (`Port 8002`)
+    - Manages Product Catalog & Categories.
+    - Includes **Data Seeding Script** (Selenium based).
+3.  **Order Service** (`Port 8003`)
+    - Manages Cart (Backend API compliant) & Order Creation.
+    - Stores Order History.
+4.  **Delivery Service** (`Port 8004`)
+    - Manages Delivery Lifecycle.
+    - **Auto-Simulation**: Background task automatically moves status from `PLACED` -> `DELIVERED`.
 
-### Option 1: Docker Compose (Development)
-1.  **Start Services**: `docker compose up -d --build`
-2.  **Run Flutter App**: No install - use Codespaces!
+## 🛠️ How to Run (Evaluator Guide)
 
-### Option 2: GitHub Codespaces (No Install)
-Run without installing anything:
-1.  Push to GitHub.
-2.  Click **Code** -> **Codespaces** -> **Create codespace on main**.
-3.  Run:
+### Prerequisites
+- Docker Desktop (Recommended)
+- OR Python 3.10+ and MongoDB installed locally.
+
+### Method 1: Docker Compose (Easiest)
+1.  Open terminal in root directory.
+2.  Run:
     ```bash
-    docker compose up -d
-    cd frontend/blinkit_mobile
-    flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
+    docker-compose up --build
     ```
+    *This starts all 4 services and MongoDB.*
 
-### Option 3: Kubernetes (Production Simulation)
-1.  Build Images.
-2.  `kubectl apply -f k8s/`
-3.  Access services on NodePorts 30001-30004.
-
-## ✨ Features
--   **Microservices**: User, Product, Order, Delivery.
--   **Real-time**: Delivery tracking simulation.
--   **Premium UI**: Google Stitch design.
-
-## 📦 Seeding Data
-
-To simulate real-world data, you can seed the `product_service` with data extracted from Blinkit.
-
-1.  Navigate to the service directory:
-    ```bash
-    cd blinkit_commerce/services/product_service
-    ```
-2.  Install dependencies:
+### Method 2: Manual / Local Run
+1.  Install dependencies:
     ```bash
     pip install -r requirements.txt
     ```
-3.  Run the seeder script:
+2.  Ensure MongoDB is running locally on port `27017`.
+3.  Start each service in a separate terminal:
     ```bash
-    python seed_from_blinkit.py
+    uvicorn services.user_service.main:app --port 8001
+    uvicorn services.product_service.main:app --port 8002
+    uvicorn services.order_service.main:app --port 8003
+    uvicorn services.delivery_service.main:app --port 8004
     ```
-    *Note: This script uses Selenium (headless) to scrape live data. Ensure you have Chrome installed.*
+
+### Running the Frontend (Flutter)
+1.  Navigate to app directory:
+    ```bash
+    cd frontend/blinkit_mobile
+    ```
+2.  Run on emulator:
+    ```bash
+    flutter run
+    ```
+    *Note: The app is configured to connect to `10.0.2.2` (Android Emulator localhost). If running on iOS or Web, update `baseUrl` in `lib/services/api_service.dart`.*
+
+## 📦 Data Seeding
+To populate the app with real data from Blinkit:
+1.  Ensure Chrome is installed.
+2.  Run:
+    ```bash
+    python services/product_service/seed_from_blinkit.py
+    ```
+
+## 🔍 Transparency Statement (AI Usage)
+In compliance with the assignment transparency requirement:
+- **Architecture Design**: AI assisted in defining the microservices boundaries and Kubernetes manifests.
+- **Boilerplate Code**: `FastAPI` structures and `Pydantic` models were scaffolded using AI to save time.
+- **Frontend UI**: Google Stitch generated HTML was used as a reference; Flutter widgets were implemented manually with AI assistance for state management (Provider pattern).
+- **Core Logic**: Business logic (Cart calculations, Delivery simulation, JWT handling) was verified and refined manually.
+
+## ☸️ Kubernetes (Production Simulation)
+
+If you prefer to run on Kubernetes (e.g., Minikube or Docker Desktop K8s):
+
+1.  **Build Images Locally** (Required because `imagePullPolicy` is `Never`):
+    ```bash
+    docker build -t user-service:latest ./services/user_service
+    docker build -t product-service:latest ./services/product_service
+    docker build -t order-service:latest ./services/order_service
+    docker build -t delivery-service:latest ./services/delivery_service
+    ```
+2.  **Deploy**:
+    ```bash
+    kubectl apply -f k8s/
+    ```
+3.  **Access**: Services will be available on NodePorts `30001` (User), `30002` (Product), `30003` (Order), `30004` (Delivery).

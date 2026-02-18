@@ -21,6 +21,11 @@ async def get_products(category: Optional[str] = None, q: Optional[str] = None):
     products = await db.products.find(query).to_list(100)
     return products
 
+@app.get("/categories", response_model=List[str])
+async def get_categories():
+    categories = await db.products.distinct("category")
+    return categories
+
 @app.get("/products/{product_id}", response_model=Product)
 async def get_product(product_id: str):
     product = await db.products.find_one({"_id": product_id})

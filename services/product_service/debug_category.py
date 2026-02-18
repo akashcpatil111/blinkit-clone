@@ -11,7 +11,7 @@ import asyncio
 
 def debug_category():
     options = Options()
-    options.add_argument("--headless=new") 
+    # options.add_argument("--headless=new") 
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--window-size=1920,1080")
@@ -19,9 +19,12 @@ def debug_category():
 
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
-    with open("debug_cat_log.txt", "w") as log:
+    with open("debug_cat_log.txt", "w", encoding="utf-8") as log:
         def log_print(s):
-            print(s)
+            try:
+                print(s)
+            except UnicodeEncodeError:
+                print(s.encode('ascii', 'ignore').decode('ascii'))
             log.write(s + "\n")
             
         try:
@@ -86,7 +89,8 @@ def debug_category():
             for i, card in enumerate(product_cards[:5]):
                 try:
                     name = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-line-clamp-2')]").text
-                    price = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-font-semibold') and contains(text(), '₹')]").text
+                    # Updated selector: search for font-semibold AND text-200, avoiding the Rupee symbol check in XPath
+                    price = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-font-semibold') and contains(@class, 'tw-text-200')]").text
                     qty = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-line-clamp-1') and contains(@class, 'tw-text-200')]").text
                     log_print(f"Product {i}: {name} | {qty} | {price}")
                 except Exception as e:

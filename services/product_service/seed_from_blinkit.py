@@ -1,3 +1,8 @@
+import sys
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except AttributeError:
+    pass
 
 import asyncio
 import os
@@ -23,11 +28,17 @@ async def seed_products(products):
         return
     
     print("Clearing existing products...")
-    await db.products.delete_many({})
+    try:
+        await db.products.delete_many({})
+    except Exception as e:
+        print(f"Warning: Could not clear products (DB connection issue?): {e}")
 
     print(f"Inserting {len(products)} products into MongoDB...")
-    result = await db.products.insert_many(products)
-    print(f"Successfully inserted {len(result.inserted_ids)} products.")
+    try:
+        result = await db.products.insert_many(products)
+        print(f"Successfully inserted {len(result.inserted_ids)} products.")
+    except Exception as e:
+        print(f"Failed to insert products: {e}")
 
 def clean_price(price_str):
     if not price_str:
@@ -44,7 +55,7 @@ def clean_price(price_str):
 
 def scrape_blinkit():
     options = Options()
-    options.add_argument("--headless=new") 
+    # options.add_argument("--headless=new") 
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--window-size=1920,1080")
@@ -160,7 +171,8 @@ def scrape_blinkit():
                         # Extract Price
                         price = 0.0
                         try:
-                            price_el = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-font-semibold') and contains(text(), '₹')]")
+                            # Updated selector: search for font-semibold AND text-200, avoiding the Rupee symbol check in XPath
+                            price_el = card.find_element(By.XPATH, ".//div[contains(@class, 'tw-font-semibold') and contains(@class, 'tw-text-200')]")
                             price = clean_price(price_el.text)
                         except:
                             pass
