@@ -1,98 +1,94 @@
-# Blinkit Clone - Microservices & Flutter Architecture
+# Blinkit Clone - B2C Quick Commerce Application
 
-**Intern Assignment Submission**
+This is a minimal, fully functional B2C quick-commerce application built to demonstrate a microservices architecture, cross-platform frontend development, and containerized deployment.
 
-## 📋 Project Overview
-A minimal B2C quick-commerce application built with a **Microservices Architecture**.
-- **Backend**: Python (FastAPI) - 4 Independent Services
-- **Frontend**: Flutter (Mobile App)
-- **Database**: MongoDB (Per-service collections)
-- **Infrastructure**: Docker & Kubernetes
+## 🏗️ Overall Architecture
+The system follows a strict **Microservices Architecture** with a clear separation of concerns. 
+- The backend is divided into exactly **4 independent microservices**.
+- Each service runs in its own Docker container, communicates via REST APIs (JSON), and maintains its own isolated MongoDB collection.
+- The frontend is built with **Flutter**, designed to connect with these four independent services as a unified mobile app experience.
 
-## 🏗️ Architecture
+### Service Responsibilities
+1. **User Service (Port 8001)**
+   *   **Responsibility:** Handles user registration, login, profile management, and maintains user address books.
+   *   **Authentication:** Issues simple Bearer tokens (JWT) upon successful login.
 
-The system is split into 4 isolated microservices as required:
+2. **Product Catalog Service (Port 8002)**
+   *   **Responsibility:** Manages all product listings and categories.
+   *   **Seeding:** Includes an automated scraper script (`seed_from_blinkit.py`) that populates the MongoDB product collection with real-world data directly from Blinkit.com.
 
-1.  **User Service** (`Port 8001`)
-    - Handles Registration & Login (JWT Auth).
-    - Manages User Profile & Addresses.
-2.  **Product Service** (`Port 8002`)
-    - Manages Product Catalog & Categories.
-    - Includes **Data Seeding Script** (Selenium based).
-3.  **Order Service** (`Port 8003`)
-    - Manages Cart (Backend API compliant) & Order Creation.
-    - Stores Order History.
-4.  **Delivery Service** (`Port 8004`)
-    - Manages Delivery Lifecycle.
-    - **Auto-Simulation**: Background task automatically moves status from `PLACED` -> `DELIVERED`.
+3. **Cart and Order Service (Port 8003)**
+   *   **Responsibility:** Manages cart items, converts items into historical orders, calculates totals, and assigns unique order reference IDs.
 
-## 🛠️ How to Run (Evaluator Guide)
+4. **Delivery Service (Port 8004)**
+   *   **Responsibility:** Manages and tracks the lifecycle of an order’s delivery progression.
+   *   **Simulation:** Contains an asynchronous background process that automatically progresses active orders through the status pipeline every 30 seconds.
 
-### Prerequisites
-- Docker Desktop (Recommended)
-- OR Python 3.10+ and MongoDB installed locally.
+## 🔌 API List
 
-### Method 1: Docker Compose (Easiest)
-1.  Open terminal in root directory.
-2.  Run:
-    ```bash
-    docker-compose up --build
-    ```
-    *This starts all 4 services and MongoDB.*
+### 1. User Service (`http://127.0.0.1:8001`)
+*   **`POST /register`** - Create a new user account.
+*   **`POST /login`** - Authenticate and receive a JWT token.
+*   **`GET /profile`** - Fetch the authenticated user's profile data.
+*   **`GET /users/me/addresses`** - Get saved delivery addresses.
+*   **`POST /users/me/addresses`** - Add a new delivery address.
 
-### Method 2: Manual / Local Run
-1.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-2.  Ensure MongoDB is running locally on port `27017`.
-3.  Start each service in a separate terminal:
-    ```bash
-    uvicorn services.user_service.main:app --port 8001
-    uvicorn services.product_service.main:app --port 8002
-    uvicorn services.order_service.main:app --port 8003
-    uvicorn services.delivery_service.main:app --port 8004
-    ```
+### 2. Product Catalog Service (`http://127.0.0.1:8002`)
+*   **`GET /products`** - Fetch all products (supports `category` and `q` search queries).
+*   **`GET /products/{product_id}`** - Fetch a specific product by ID.
+*   **`GET /categories`** - Fetch all unique product categories.
+
+### 3. Cart and Order Service (`http://127.0.0.1:8003`)
+*   **`POST /cart/add`** - Add an item to the user's cart.
+*   **`POST /cart/remove`** - Remove an item from the user's cart.
+*   **`GET /cart/{user_id}`** - Fetch the user's current cart.
+*   **`POST /order/create`** - Convert cart payload into an official order.
+*   **`GET /orders?user_id={user_id}`** - Fetch order history for a specific user.
+*   **`GET /order/{order_id}`** - Fetch details of a specific order.
+
+### 4. Delivery Service (`http://127.0.0.1:8004`)
+*   **`GET /order/{order_id}/status`** - Get the delivery object for a specific order.
+*   **`POST /order/{order_id}/update-status`** - Manually update the status of an active delivery.
+*(Expected Statuses: `PLACED`, `PACKED`, `OUT_FOR_DELIVERY`, `DELIVERED`)*
+
+## 🚀 How to Run the System Locally
+
+### Option 1: Quick Start (Windows Batch Script)
+The easiest way to start the entire backend stack locally is to use the provided batch script. You must have Python installed.
+
+1. Ensure your MongoDB instance is running (locally or via Docker).
+2. Double-click the `run_demo.bat` file in the root `blinkit_commerce` directory.
+3. This script will automatically:
+    * Install all required Python dependencies (`requirements.txt`).
+    * Boot up all 4 microservice APIs (ports 8001 through 8004) in background terminal windows.
+    * Trigger the Selenium web scraper to dynamically seed the Product Database with real data.
+4. Navigate to `http://localhost:<PORT>/docs` in your browser to view the interactive Swagger API documentation for any of the 4 services.
+
+### Option 2: Docker Containers
+Each service contains its own `Dockerfile` allowing for independent containerized deployment.
+1. Build the images from the root directory:
+   * `docker build -t user-service -f services/user_service/Dockerfile .`
+   * `docker build -t product-service -f services/product_service/Dockerfile .`
+   * `docker build -t order-service -f services/order_service/Dockerfile .`
+   * `docker build -t delivery-service -f services/delivery_service/Dockerfile .`
+2. Run each container, exposing their respective ports (8001, 8002, 8003, 8004), and passing your `MONGO_URI` environment variable so they can connect to the shared database cluster.
 
 ### Running the Frontend (Flutter)
-1.  Navigate to app directory:
-    ```bash
-    cd frontend/blinkit_mobile
-    ```
-2.  Run on emulator:
-    ```bash
-    flutter run
-    ```
-    *Note: The app is configured to connect to `10.0.2.2` (Android Emulator localhost). If running on iOS or Web, update `baseUrl` in `lib/services/api_service.dart`.*
+1. Ensure the Flutter SDK is installed.
+2. Open a terminal and navigate to `frontend/blinkit_mobile`.
+3. If running on a Desktop or Web browser, ensure the `baseUrl` in `lib/services/api_service.dart` points to your IP address (e.g., `http://127.0.0.1` or `http://localhost`). It defaults to `http://10.0.2.2` for Android Emulator loopbacks.
+4. Run `flutter run`.
 
-## 📦 Data Seeding
-To populate the app with real data from Blinkit:
-1.  Ensure Chrome is installed.
-2.  Run:
-    ```bash
-    python services/product_service/seed_from_blinkit.py
-    ```
+## 🤔 Assumptions Made
+* **Trusted Network:** As per the assignment guidelines, authentication is only explicitly enforced on frontend-facing APIs (like Login/Profile). Communication between internal services (like the Order service sending a signal to the Delivery service) assumes a secure, trusted internal network and skips heavy token validation for simplicity.
+* **Prepaid Orders:** There is no payment gateway integration. It is assumed that hitting the `/order/create` endpoint implies a prepaid, completely legitimate order.
+* **Shared Database Host:** Rather than spinning up 4 entirely separate heavy MongoDB instances, the architecture assumes 1 common MongoDB server host (e.g. `localhost:27017`), but utilizes completely independent collections (`users`, `products`, `orders`, `deliveries`) within it for strict data segregation.
 
-## 🔍 Transparency Statement (AI Usage)
-In compliance with the assignment transparency requirement:
-- **Architecture Design**: AI assisted in defining the microservices boundaries and Kubernetes manifests.
-- **Boilerplate Code**: `FastAPI` structures and `Pydantic` models were scaffolded using AI to save time.
-- **Frontend UI**: Google Stitch generated HTML was used as a reference; Flutter widgets were implemented manually with AI assistance for state management (Provider pattern).
-- **Core Logic**: Business logic (Cart calculations, Delivery simulation, JWT handling) was verified and refined manually.
+## ⚠️ Known Limitations
+* **OTP Implementation:** The authentication system uses a basic JWT email/password system. Complex phone-based SMS OTPs were skipped per the assignment guidelines to prioritize architectural focus over third-party integration overhead.
+* **Delivery Simulation:** The delivery tracking is purely a background scheduled simulation. There is no actual logistics mapping or driver assignment logic.
 
-## ☸️ Kubernetes (Production Simulation)
-
-If you prefer to run on Kubernetes (e.g., Minikube or Docker Desktop K8s):
-
-1.  **Build Images Locally** (Required because `imagePullPolicy` is `Never`):
-    ```bash
-    docker build -t user-service:latest ./services/user_service
-    docker build -t product-service:latest ./services/product_service
-    docker build -t order-service:latest ./services/order_service
-    docker build -t delivery-service:latest ./services/delivery_service
-    ```
-2.  **Deploy**:
-    ```bash
-    kubectl apply -f k8s/
-    ```
-3.  **Access**: Services will be available on NodePorts `30001` (User), `30002` (Product), `30003` (Order), `30004` (Delivery).
+## 🤖 Transparency Requirement (AI Usage)
+* **Frontend UI (Flutter):** I utilized Google Stitch generated UI layouts from the provided reference URL and adapted them into the Flutter Widget tree.
+* **Microservices Base:** The initial boilerplate for the FastAPI Python services, the Pydantic data models, and the database connection strings were scaffolded using AI code generation (Cursor/Antigravity).
+* **Manual Customizations & Fixes:** I heavily customized the generated backend to enforce strict conformance with the assignment requirements. This included rewriting API endpoints, standardizing the `DeliveryStatus` enum flows to match the prompt (`PLACED` -> `DELIVERED`), modifying Pydantic models to auto-generate `reference_id`s, and rectifying application startup crashes across the `order` and `delivery` services manually using terminal debugging.
