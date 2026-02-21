@@ -5,6 +5,10 @@ from typing import List, Optional
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"Hello": "Product Service"}
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}

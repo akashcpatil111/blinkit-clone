@@ -4,9 +4,9 @@ from enum import Enum
 from bson import ObjectId
 
 class DeliveryStatus(str, Enum):
-    PENDING = "PENDING"
-    ASSIGNED = "ASSIGNED"
-    PICKED_UP = "PICKED_UP"
+    PLACED = "PLACED"
+    PACKED = "PACKED"
+    OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
     DELIVERED = "DELIVERED"
 
 class PyObjectId(ObjectId):
@@ -27,7 +27,7 @@ class PyObjectId(ObjectId):
 class Delivery(BaseModel):
     id: Optional[PyObjectId] = Field(None, alias="_id")
     order_id: str
-    status: DeliveryStatus = DeliveryStatus.PENDING
+    status: DeliveryStatus = DeliveryStatus.PLACED
 
     class Config:
         allow_population_by_field_name = True

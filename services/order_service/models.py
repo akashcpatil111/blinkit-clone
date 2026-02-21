@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from enum import Enum
 from bson import ObjectId
+from datetime import datetime
+import uuid
 
 class OrderStatus(str, Enum):
     PLACED = "PLACED"
@@ -30,11 +32,13 @@ class Order(BaseModel):
     product_ids: List[str]
     total: float
     status: OrderStatus = OrderStatus.PLACED
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    reference_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8].upper())
 
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
+        json_encoders = {ObjectId: str, datetime: lambda dt: dt.isoformat()}
         schema_extra = {
             "example": {
                 "user_id": "user_id_here",

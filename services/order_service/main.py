@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from typing import List
 from .database import db
 from .models import Order
@@ -11,13 +12,18 @@ async def health_check():
     return {"status": "ok"}
 
 
-@app.post("/orders", status_code=201)
+@app.post("/order/create", status_code=201)
 async def create_order(order: Order):
     new_order = await db.orders.insert_one(order.dict(by_alias=True))
     created_order = await db.orders.find_one({"_id": new_order.inserted_id})
     return created_order
 
-@app.get("/orders/{order_id}", response_model=Order)
+@app.get("/orders", response_model=List[Order])
+async def get_orders(user_id: str):
+    orders = await db.orders.find({"user_id": user_id}).to_list(100)
+    return orders
+
+@app.get("/order/{order_id}", response_model=Order)
 async def get_order(order_id: str):
     order = await db.orders.find_one({"_id": ObjectId(order_id)})
     if order:

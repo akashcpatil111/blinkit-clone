@@ -5,6 +5,10 @@ from bson import ObjectId
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"Hello": "Delivery Service"}
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
@@ -16,21 +20,20 @@ async def create_delivery(delivery: Delivery):
     created_delivery = await db.deliveries.find_one({"_id": new_delivery.inserted_id})
     return created_delivery
 
-@app.get("/deliveries/{delivery_id}", response_model=Delivery)
-async def get_delivery(delivery_id: str):
-    delivery = await db.deliveries.find_one({"_id": ObjectId(delivery_id)})
+@app.get("/order/{order_id}/status", response_model=Delivery)
+async def get_delivery(order_id: str):
+    delivery = await db.deliveries.find_one({"order_id": order_id})
     if delivery:
         return delivery
     raise HTTPException(status_code=404, detail="Delivery not found")
 
-@app.put("/deliveries/{delivery_id}/status")
-async def update_delivery_status(delivery_id: str, status: DeliveryStatus):
+@app.post("/order/{order_id}/update-status")
+async def update_delivery_status(order_id: str, status: DeliveryStatus):
     result = await db.deliveries.update_one(
-        {"_id": ObjectId(delivery_id)}, {"$set": {"status": status}}
+        {"order_id": order_id}, {"$set": {"status": status}}
     )
     if result.modified_count == 1:
         return {"msg": "Status updated"}
-    raise HTTPException(status_code=404, detail="Delivery not found")
     raise HTTPException(status_code=404, detail="Delivery not found")
 
 import asyncio
@@ -44,11 +47,11 @@ async def simulate_delivery_updates():
             current_status = delivery["status"]
             next_status = None
             
-            if current_status == "PENDING":
-                next_status = "ASSIGNED"
-            elif current_status == "ASSIGNED":
-                next_status = "PICKED_UP"
-            elif current_status == "PICKED_UP":
+            if current_status == "PLACED":
+                next_status = "PACKED"
+            elif current_status == "PACKED":
+                next_status = "OUT_FOR_DELIVERY"
+            elif current_status == "OUT_FOR_DELIVERY":
                 next_status = "DELIVERED"
             
             if next_status:
@@ -56,7 +59,7 @@ async def simulate_delivery_updates():
                     {"_id": delivery["_id"]},
                     {"$set": {"status": next_status}}
                 )
-                print(f"Updated delivery {delivery['_id']} text to {next_status}")
+                print(f"Updated delivery {delivery['_id']} status to {next_status}")
         
         await asyncio.sleep(30)
 

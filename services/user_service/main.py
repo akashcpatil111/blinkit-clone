@@ -86,7 +86,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
-@app.get("/users/me", response_model=UserResponse)
+@app.get("/profile", response_model=UserResponse)
 async def read_users_me(current_user: UserInDB = Depends(get_current_user)):
     return current_user
 

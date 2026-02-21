@@ -50,13 +50,12 @@ class ApiService {
 
   Future<dynamic> createOrder(String userId, List<String> productIds, double total) async {
     final response = await http.post(
-      Uri.parse('$orderServiceUrl/orders'),
+      Uri.parse('$orderServiceUrl/order/create'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'user_id': userId,
         'product_ids': productIds,
         'total': total,
-        'status': 'PLACED'
       }),
     );
 
@@ -68,8 +67,8 @@ class ApiService {
   }
   
   // Actually fetches from Delivery Service to get the status
-  Future<Map<String, dynamic>> getDeliveryStatus(String deliveryId) async {
-     final response = await http.get(Uri.parse('$deliveryServiceUrl/deliveries/$deliveryId'));
+  Future<Map<String, dynamic>> getDeliveryStatus(String orderId) async {
+     final response = await http.get(Uri.parse('$deliveryServiceUrl/order/$orderId/status'));
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
