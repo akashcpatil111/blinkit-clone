@@ -60,6 +60,8 @@ async def get_cart(user_id: str):
     cart_items = await cursor.to_list(length=100)
     return cart_items
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 def read_root():
-    return {"Hello": "Order Service"}
+    return RedirectResponse(url="/docs")

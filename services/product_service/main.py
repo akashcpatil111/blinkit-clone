@@ -5,9 +5,11 @@ from typing import List, Optional
 
 app = FastAPI()
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 def read_root():
-    return {"Hello": "Product Service"}
+    return RedirectResponse(url="/docs")
 
 @app.get("/health")
 async def health_check():

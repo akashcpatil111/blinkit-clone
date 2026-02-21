@@ -64,9 +64,11 @@ async def login(user: UserLogin):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 def read_root():
-    return {"Hello": "User Service"}
+    return RedirectResponse(url="/docs")
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(

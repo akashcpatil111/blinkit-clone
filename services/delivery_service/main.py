@@ -5,9 +5,11 @@ from bson import ObjectId
 
 app = FastAPI()
 
+from fastapi.responses import RedirectResponse
+
 @app.get("/")
 def read_root():
-    return {"Hello": "Delivery Service"}
+    return RedirectResponse(url="/docs")
 
 @app.get("/health")
 async def health_check():
