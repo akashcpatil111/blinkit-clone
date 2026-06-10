@@ -1,6 +1,6 @@
 # Blinkit Clone - B2C Quick Commerce Application
 
-This is a minimal, fully functional B2C quick-commerce application built to demonstrate a microservices architecture, cross-platform frontend development, and containerized deployment.
+A production-grade quick-commerce application inspired by Blinkit, built on a **microservices architecture** with a cross-platform Flutter mobile frontend. Demonstrates real-world backend design patterns including service isolation, asynchronous processing, containerized deployment, and real-time order tracking simulation.
 
 ## 🏗️ Overall Architecture
 The system follows a strict **Microservices Architecture** with a clear separation of concerns. 
